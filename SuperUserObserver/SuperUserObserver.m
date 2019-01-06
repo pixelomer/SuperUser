@@ -1,6 +1,21 @@
 #import "SuperUserObserver.h"
 #import <notify.h>
 
+// Extension to include data in UIAlertView
+@interface UIAlertView(Private)
+@property (nonatomic,strong,retain) id context;
+@end
+
+@implementation UIAlertView(Private)
+@dynamic context;
+-(void)setContext:(id)context {
+    objc_setAssociatedObject(self, @selector(context), context, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(id)context {
+    return objc_getAssociatedObject(self, @selector(context));
+}
+@end
+
 // SpringBoard
 @implementation SuperUserObserver
 
@@ -26,6 +41,32 @@
     return self;
 }
 
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    NSString *buttonTitle = [alertView buttonTitleAtIndex:buttonIndex];
+    NSString *requestID = alertView.context;
+    void (^reply)(bool) = ^(bool success){
+        CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),
+            (__bridge CFStringRef)[kAuthenticationReply stringByAppendingFormat:@".%@%@", requestID, (success ? @"S" : @"F")],
+            NULL,
+            NULL,
+            0x0);
+    };
+    if ([buttonTitle isEqualToString:LocalizedString(@"Yes")]) {
+        reply(true);
+    }
+    else if ([buttonTitle isEqualToString:LocalizedString(@"Always")]) {
+        //[NSUserDefaults.standardUserDefaults setBool:YES forKey:[NSString stringWithFormat]]
+        reply(true);
+    }
+    else if ([buttonTitle isEqualToString:LocalizedString(@"No")]) {
+        reply(false);
+    }
+    else if ([buttonTitle isEqualToString:LocalizedString(@"Never")]) {
+        //[NSUserDefaults.standardUserDefaults setBool:YES forKey:[NSString stringWithFormat]]
+        reply(false);
+    }
+}
+
 - (void)getPermissionFromUserWithAppName:(NSString *)appName
     andID:(uid_t)newID
     withIDType:(unsigned short)idType
@@ -39,8 +80,11 @@
         [NSString stringWithFormat:@"%s (%i)", uinfo->pw_name, newID] :
         [NSString stringWithFormat:@"%i", newID];
     NSString *reason = [NSString stringWithFormat:
-        LocalizedString(@"%@ wants to set %@ to %@."),
+        LocalizedString(@"%@ wants to set %@ to %@. Do you want to allow this?"),
         applicationName, [SuperUserObserver localizedDescriptionForIDType:idType], idDescription];
+    #if DEBUG
+    reason = [reason stringByAppendingFormat:@" (#%@)", requestID];
+    #endif
     /*
     void (^buttonAction)(UIAlertAction * action) = ^(UIAlertAction * action){
         dispatch_sync(dispatch_get_main_queue(), ^{
@@ -55,13 +99,17 @@
     [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:buttonAction]];
     [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault handler:buttonAction]];
     */
-    UIAlertView *dAlert = [[NSClassFromString(@"UIAlertView") alloc] initWithTitle:@"SuperUser" message:reason delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+    UIAlertView *dAlert = [[NSClassFromString(@"UIAlertView") alloc] initWithTitle:@"SuperUser" message:reason delegate:nil cancelButtonTitle:nil otherButtonTitles:
+        LocalizedString(@"Yes"),
+        LocalizedString(@"Always"),
+        LocalizedString(@"No"),
+        LocalizedString(@"Never"), nil];
+    dAlert.context = requestID;
+    dAlert.delegate = self;
     [dAlert show];
-    CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),
-        (__bridge CFStringRef)[kAuthenticationReply stringByAppendingFormat:@".%@S", requestID],
-        NULL,
-        NULL,
-        0x0);
+    [dAlert.context release];
+    dAlert.context = nil;
+    /*
     [_center sendMessageName:[kAuthenticationReply stringByAppendingFormat:@".%@", requestID] 
         userInfo:@{
             kHasAuthenticated : @YES,
@@ -69,6 +117,7 @@
             kIDType : @(idType)
         }
     ];
+    */
 }
 
 - (void)appWantsToAuthenticate:(id)v1 withUserInfo:(NSDictionary *)userInfo {
@@ -171,7 +220,8 @@ static void AuthenticationReplyNotificationReceived(CFNotificationCenterRef cent
         0x0);
     if (mainBundle && [mainBundle isKindOfClass:[NSBundle class]])
         appName = [[mainBundle localizedInfoDictionary] objectForKey:@"CFBundleDisplayName"] ?: 
-            ([[mainBundle infoDictionary] objectForKey:@"CFBundleExecutable"] ?: appName);
+            ([[mainBundle infoDictionary] objectForKey:@"CFBundleExecutable"] ?: (
+                NSProcessInfo.processInfo.processName ?: appName));
     NSDictionary *requestObject = @{
         kAppName : appName,
         kProcessName : NSProcessInfo.processInfo.processName,
