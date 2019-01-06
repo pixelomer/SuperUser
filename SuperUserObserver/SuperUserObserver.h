@@ -11,8 +11,11 @@
 @end
 
 @interface SuperUser : NSObject {
-    NSNumber *authenticationStatus;
     CPDistributedMessagingCenter *notifCenter;
 }
+@property (nonatomic,assign) int (*orig_setgid)(gid_t gid);
+@property (nonatomic,assign) int (*orig_setuid)(uid_t uid);
+@property (nonatomic,assign) int (*orig_seteuid)(uid_t euid);
+@property (nonatomic,retain) NSNumber *authenticationStatus;
 - (bool)authenticateWithIDType:(short)idType ID:(uid_t)newID;
 @end

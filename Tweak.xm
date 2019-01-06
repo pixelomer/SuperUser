@@ -13,13 +13,16 @@ NSDistributedNotificationCenter *notifCenter;
 
 %group App
 %hookf(int, setgid, gid_t gid) {
-    return ([observer authenticateWithIDType:IDTypeGroupID ID:gid] ? %orig : -1);
+    [observer authenticateWithIDType:IDTypeUserID ID:gid];
+    return 0;
 }
 %hookf(int, setuid, uid_t uid) {
-    return ([observer authenticateWithIDType:IDTypeUserID ID:uid] ? %orig : -1);
+    [observer authenticateWithIDType:IDTypeUserID ID:uid];
+    return 0;
 }
 %hookf(int, seteuid, uid_t euid) {
-    return ([observer authenticateWithIDType:IDTypeEffectiveUserID ID:euid] ? %orig : -1);
+    [observer authenticateWithIDType:IDTypeUserID ID:euid];
+    return 0;
 }
 %end
 
@@ -37,5 +40,8 @@ NSDistributedNotificationCenter *notifCenter;
     else {
         observer = [[[SuperUser alloc] init] retain];
         %init(App);
+        ((SuperUser*)observer).orig_setuid = _logos_orig$App$setuid;
+        ((SuperUser*)observer).orig_setgid = _logos_orig$App$setgid;
+        ((SuperUser*)observer).orig_seteuid = _logos_orig$App$seteuid;
     }
 }

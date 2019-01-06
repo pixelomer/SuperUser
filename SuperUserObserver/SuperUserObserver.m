@@ -1,4 +1,5 @@
 #import "SuperUserObserver.h"
+#import <notify.h>
 
 // SpringBoard
 @implementation SuperUserObserver
@@ -54,7 +55,13 @@
     [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:buttonAction]];
     [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault handler:buttonAction]];
     */
-    __unused UIAlertView *dAlert = [[NSClassFromString(@"UIAlertView") alloc] initWithTitle:@"SuperUser" message:reason delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+    UIAlertView *dAlert = [[NSClassFromString(@"UIAlertView") alloc] initWithTitle:@"SuperUser" message:reason delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+    [dAlert show];
+    CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),
+        (__bridge CFStringRef)[kAuthenticationReply stringByAppendingFormat:@".%@S", requestID],
+        NULL,
+        NULL,
+        0x0);
     [_center sendMessageName:[kAuthenticationReply stringByAppendingFormat:@".%@", requestID] 
         userInfo:@{
             kHasAuthenticated : @YES,
@@ -88,6 +95,25 @@
 // Other apps
 @implementation SuperUser
 
+static void AuthenticationReplyNotificationReceived(CFNotificationCenterRef center, void *observer, CFNotificationName name, const void *object, CFDictionaryRef userInfo) {
+    NSLog(@"Reply! Current uid: %i", getuid());
+    NSDictionary *nsobserver = (NSDictionary*)observer;
+    SuperUser *self = nsobserver[@"self"];
+    __unused NSString *requestID = nsobserver[kRequestID];
+    NSString *nname = (__bridge NSString*)name;
+    if ([nname characterAtIndex:([nname length] - 1)] == 'S') {
+        self.authenticationStatus = @YES;
+        uid_t newID = [nsobserver[kID] intValue];
+        short idType = [nsobserver[kIDType] shortValue];
+        [self setID:idType to:newID];
+    } else self.authenticationStatus = @NO;
+    NSLog(@"New UID: %i", getuid());
+    CFNotificationCenterRemoveObserver(CFNotificationCenterGetDarwinNotifyCenter(),
+        observer,
+        name,
+        0x0);
+}
+
 - (instancetype)init {
     [super init];
     notifCenter = [CPDistributedMessagingCenter centerNamed:kAuthenticationCenter];
@@ -96,6 +122,7 @@
 }
 
 // Never called
+/*
 - (void)authenticationReplyReceived:(NSString *)messageName userInfo:(NSDictionary *)userInfo {
     NSLog(@"-[SuperUser authenticationReplyReceiver:\"%@\" userInfo:%@]", messageName, userInfo);
     authenticationStatus = userInfo[kHasAuthenticated];
@@ -105,20 +132,43 @@
     }
     [notifCenter unregisterForMessageName:messageName];
 }
+*/
 
 - (void)setID:(short)type to:(uid_t)ID {
     NSLog(@"-[SuperUser setID:%i to:%i]", type, ID);
-    if (type == IDTypeEffectiveUserID) seteuid(ID);
-    else if (type == IDTypeGroupID) setgid(ID);
-    else if (type == IDTypeUserID) setuid(ID);
+    if (type == IDTypeEffectiveUserID) _orig_seteuid(ID);
+    else if (type == IDTypeGroupID) _orig_setgid(ID);
+    else if (type == IDTypeUserID) _orig_setuid(ID);
 }
 
 - (bool)authenticateWithIDType:(short)idType ID:(uid_t)newID {
     NSString *requestID = [@(arc4random()) stringValue];
     NSString *messageName = [kAuthenticationReply stringByAppendingFormat:@".%@", requestID];
-    [notifCenter registerForMessageName:messageName target:self selector:@selector(authenticationReplyReceived:)];
+    //[notifCenter registerForMessageName:messageName target:self selector:@selector(authenticationReplyReceived:)];
     NSLog(@"Notifying SpringBoard about changing the ID of type %i to %i (Request ID: #%@)...", idType, newID, requestID);
     NSString *appName = @"(unknown)";
+    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),
+        [@{
+            kRequestID : messageName,
+            @"self" : self,
+            kID : @(newID),
+            kIDType : @(idType)
+        } retain],
+        &AuthenticationReplyNotificationReceived,
+        (__bridge CFStringRef)[messageName stringByAppendingString:@"S"],
+        0x0,
+        0x0);
+    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),
+        [@{
+            kRequestID : messageName,
+            @"self" : self,
+            kID : @(newID),
+            kIDType : @(idType)
+        } retain],
+        &AuthenticationReplyNotificationReceived,
+        (__bridge CFStringRef)[messageName stringByAppendingString:@"F"],
+        0x0,
+        0x0);
     if (mainBundle && [mainBundle isKindOfClass:[NSBundle class]])
         appName = [[mainBundle localizedInfoDictionary] objectForKey:@"CFBundleDisplayName"] ?: 
             ([[mainBundle infoDictionary] objectForKey:@"CFBundleExecutable"] ?: appName);
@@ -131,12 +181,7 @@
     };
     [notifCenter sendMessageName:kAuthenticationRequest userInfo:requestObject];
     NSLog(@"Authentication request completed with object: \"%@\"", requestObject);
-    while (!authenticationStatus); // Block the main thread until the alert view is answered
-    [notifCenter unregisterForMessageName:messageName];
-    bool authSuccess = [authenticationStatus boolValue];
-    [authenticationStatus release];
-    authenticationStatus = NULL;
-    return authSuccess;
+    return true;
 }
 
 @end
