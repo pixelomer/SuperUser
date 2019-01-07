@@ -7,11 +7,12 @@ LDFLAGS = -lobjc
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = SuperUser
-SuperUser_FILES = SuperUserObserver/SuperUserObserver.m Tweak.xm
-SuperUser_PRIVATE_FRAMEWORKS = AppSupport
-SuperUser_LIBRARIES = rocketbootstrap
+SuperUser_FILES = Tweak.xm
+# SuperUser_PRIVATE_FRAMEWORKS = AppSupport
+# SuperUser_LIBRARIES = rocketbootstrap
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
-	install.exec "killall -9 SpringBoard || echo \"WARNING: You MUST restart SpringBoard after installing this tweak. Otherwise the observer will not be registered and setuid apps will crash.\""
+	@echo "Reminder: You MUST restart SpringBoard after installing this tweak. Otherwise the observer will not be registered and setuid apps will crash."
+	install.exec "killall -9 SpringBoard || true"
