@@ -7,15 +7,15 @@
 }
 
 - (void)registerObservers {
+    NSLog(@"Registering observers...");
     [notifCenter addObserverWithName:@"com.pixelomer.superuser/test.succesful"];
 }
 
 - (_Nullable instancetype)init {
-    if ([super init]) {
-        notifCenter = [DarwinNotificationCenter notificationCenterWithDelegate:[self retain]];
-        if (!notifCenter) return nil;
-    }
-    return nil;
+    [super init];
+    notifCenter = [[DarwinNotificationCenter alloc] initWithDelegate:[self retain]];
+    if (!notifCenter) return nil;
+    return self;
 }
 
 @end

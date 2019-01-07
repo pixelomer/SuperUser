@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import "../macros.h"
 #import "DarwinNotificationCenter.h"
 
 @interface SuperUserSpringBoard : NSObject<DarwinNotificationCenterDelegate> {

@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import "../macros.h"
 #import <notify.h>
 
 @protocol DarwinNotificationCenterDelegate
@@ -14,6 +15,7 @@
 - (void)addObserverWithName:(NSString * _Nonnull)name;
 - (void)removeObserverNamed:(NSString * _Nonnull)name;
 - (void)postNotification:(NSString * _Nonnull)name;
++ (void)postNotification:(NSString * _Nonnull)name;
 - (_Nullable instancetype)initWithDelegate:(_Nonnull id<DarwinNotificationCenterDelegate>)delegate;
 + (_Nullable instancetype)notificationCenterWithDelegate:(_Nonnull id<DarwinNotificationCenterDelegate>)delegate;
 

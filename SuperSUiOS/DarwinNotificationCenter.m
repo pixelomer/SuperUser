@@ -1,6 +1,7 @@
 #import "DarwinNotificationCenter.h"
 
 void DarwinNotificationCenterCallback(CFNotificationCenterRef center, void *observer, CFNotificationName name, const void *object, CFDictionaryRef userInfo) {
+    NSLog(@"Internal callback was called, forwarding to %@...", (id)observer);
     [(id<DarwinNotificationCenterDelegate>)[(id)observer performSelector:@selector(delegate)] didReceiveNotification:(__bridge NSString*)name fromCenter:center];
 }
 
@@ -22,13 +23,15 @@ void DarwinNotificationCenterCallback(CFNotificationCenterRef center, void *obse
     CFNotificationCenterPostNotification(_notifCenterRef, (__bridge CFNotificationName)name, NULL, NULL, NO);
 }
 
++ (void)postNotification:(NSString * _Nonnull)name {
+    CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), (__bridge CFNotificationName)name, NULL, NULL, NO);
+}
+
 - (_Nullable instancetype)initWithDelegate:(_Nonnull id<DarwinNotificationCenterDelegate>)delegate {
-    if ([super init]) {
-        _notifCenterRef = CFNotificationCenterGetDarwinNotifyCenter();
-        self.delegate = delegate;
-        return self;
-    }
-    return nil;
+    [super init];
+    _notifCenterRef = CFNotificationCenterGetDarwinNotifyCenter();
+    self.delegate = delegate;
+    return self;
 }
 
 + (_Nullable instancetype)notificationCenterWithDelegate:(_Nonnull id<DarwinNotificationCenterDelegate>)delegate {
