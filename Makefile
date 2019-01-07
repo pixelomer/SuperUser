@@ -7,9 +7,7 @@ LDFLAGS = -lobjc
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = SuperUser
-SuperUser_FILES = Tweak.xm
-# SuperUser_PRIVATE_FRAMEWORKS = AppSupport
-# SuperUser_LIBRARIES = rocketbootstrap
+SuperUser_FILES = $(wildcard SuperSUiOS/*.m) Tweak.xm
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
