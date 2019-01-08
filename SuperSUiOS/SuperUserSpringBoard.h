@@ -1,11 +1,8 @@
 #import <Foundation/Foundation.h>
 #import "../macros.h"
-#import "DarwinNotificationCenter.h"
 
-@interface SuperUserSpringBoard : NSObject<DarwinNotificationCenterDelegate> {
-    DarwinNotificationCenter *notifCenter;
-}
+@interface SuperUserSpringBoard : NSObject
+@property (readonly,nonatomic) CPDistributedMessagingCenter * _Nonnull notifCenter;
 - (void)registerObservers;
-- (void)didReceiveNotification:(NSString * _Nonnull)name fromCenter:(_Nonnull CFNotificationCenterRef)center;
-- (_Nullable instancetype)init;
+- (_Nullable instancetype)initWithNotificationCenter:(CPDistributedMessagingCenter * _Nonnull)center;
 @end
