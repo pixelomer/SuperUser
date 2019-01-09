@@ -11,23 +11,27 @@
     else { NSLog(@"Dismissing notification: %@", name); }
 }
 
++ (NSString * _Nonnull)requestMessage {
+    return @"com.pixelomer.superuser/authentication.request";
+}
+
 - (void)registerObservers {
     NSLog(@"Registering observers for notification center: %@", _notifCenter);
     rocketbootstrap_distributedmessagingcenter_apply([_notifCenter retain]);
-    NSLog(@"Applied RocketBootstrap applied.");
-    //[_notifCenter runServerOnCurrentThread];
-    //NSLog(@"Server started running on main thread.");
-    dispatch_async(dispatch_get_main_queue(), ^(){
-        [_notifCenter runServerOnCurrentThread];
-    });
-    NSLog(@"Server started on background thread.");
-    [_notifCenter registerForMessageName:@"com.pixelomer.superuser/authentication.request" target:self selector:NOTIF_RECEIVED_SEL];
+    NSLog(@"RocketBootstrap applied.");
+    [_notifCenter runServerOnCurrentThread];
+    NSLog(@"Server started running on main thread.");
+    [_notifCenter registerForMessageName:SuperUserSpringBoard.requestMessage target:self selector:NOTIF_RECEIVED_SEL];
     NSLog(@"Registering message name.");
+}
+
+- (_Nullable instancetype)init {
+    return nil;
 }
 
 - (_Nullable instancetype)initWithNotificationCenter:(CPDistributedMessagingCenter * _Nonnull)center {
     [super init];
-    _notifCenter = [center retain];
+    _notifCenter = [center copy];
     if (!_notifCenter) return nil;
     return self;
 }

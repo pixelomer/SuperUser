@@ -3,12 +3,24 @@
 #import "SuperSUiOS/SuperSUiOS.h"
 
 SuperUserSpringBoard *server;
-CPDistributedMessagingCenter *notifCenter;
+SuperUserClient *client;
 NSBundle *mainBundle;
+
+%group Client
+%hookf(int, setuid, uid_t val) {
+    return %orig;
+}
+%hookf(int, seteuid, uid_t val) {
+    return %orig;
+}
+%hookf(int, setgid, uid_t val) {
+    return %orig;
+}
+%end
 
 %ctor {
     NSLog(@"init");
-    notifCenter = [CPDistributedMessagingCenter centerNamed:NOTIFICATION_CENTER_NAME];
+    CPDistributedMessagingCenter *notifCenter = [CPDistributedMessagingCenter centerNamed:NOTIFICATION_CENTER_NAME];
     if (notifCenter) {
         mainBundle = NSBundle.mainBundle;
         if (mainBundle && mainBundle.bundleIdentifier && [mainBundle.bundleIdentifier isEqualToString:@"com.apple.springboard"]) {
@@ -18,11 +30,12 @@ NSBundle *mainBundle;
         }
         else {
             NSLog(@"Sending test notification...");
-            [notifCenter sendMessageName:@"com.pixelomer.superuser/authentication.request" userInfo:@{
+            [notifCenter sendMessageName:SuperUserSpringBoard.requestMessage userInfo:@{
                 @"Test" : @"Successful",
                 @"pname" : NSProcessInfo.processInfo.processName,
                 @"bid" : ((mainBundle && mainBundle.bundleIdentifier) ? mainBundle.bundleIdentifier : @"")
             }];
+            %init(Client);
         }
     }
     else {
