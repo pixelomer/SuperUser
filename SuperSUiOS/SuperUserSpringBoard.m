@@ -1,12 +1,11 @@
 #import "SuperUserSpringBoard.h"
-#define NOTIF_RECEIVED_SEL @selector(didReceiveNotification:withUserInfo:)
 
 @implementation SuperUserSpringBoard
 
 - (void)didReceiveNotification:(NSString *)name withUserInfo:(NSDictionary *)userInfo {
     if (name && userInfo) {
         NSLog(@"Handling notification \"%@\" with user info: %@", name, userInfo);   
-        
+        [_notifCenter sendMessageName:SuperUserClient.replyMessage userInfo:userInfo];
     }
     else { NSLog(@"Dismissing notification: %@", name); }
 }
@@ -32,7 +31,7 @@
 - (_Nullable instancetype)initWithNotificationCenter:(CPDistributedMessagingCenter * _Nonnull)center {
     [super init];
     if (!center) return nil;
-    _notifCenter = [center copy];
+    _notifCenter = [center retain];
     if (!_notifCenter) return nil;
     return self;
 }

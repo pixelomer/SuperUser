@@ -13,7 +13,7 @@
 - (_Nullable instancetype)initWithNotificationCenter:(CPDistributedMessagingCenter * _Nonnull)center {
     [super init];
     if (!center) return nil;
-    _notifCenter = [center copy];
+    _notifCenter = [center retain];
     if (!_notifCenter) return nil;
     return self;
 }
@@ -21,7 +21,7 @@
 - (void)startServer {
     rocketbootstrap_distributedmessagingcenter_apply([_notifCenter retain]);
     NSLog(@"RocketBootstrap applied.");
-    [_notifCenter runServerOnCurrentThread];
+    [[_notifCenter retain] runServerOnCurrentThread];
     NSLog(@"Started client server for notification center: %@", _notifCenter);
 }
 

@@ -4,6 +4,7 @@
 
 SuperUserSpringBoard *server;
 SuperUserClient *client;
+CPDistributedMessagingCenter *notifCenter;
 NSBundle *mainBundle;
 bool isSpringBoard;
 
@@ -21,7 +22,7 @@ bool isSpringBoard;
 
 %ctor {
     NSLog(@"init");
-    CPDistributedMessagingCenter *notifCenter = [CPDistributedMessagingCenter centerNamed:NOTIFICATION_CENTER_NAME];
+    notifCenter = [CPDistributedMessagingCenter centerNamed:NOTIFICATION_CENTER_NAME];
     if (notifCenter) {
         mainBundle = NSBundle.mainBundle;
         isSpringBoard = (mainBundle && mainBundle.bundleIdentifier && [mainBundle.bundleIdentifier isEqualToString:@"com.apple.springboard"]);
@@ -36,6 +37,7 @@ bool isSpringBoard;
             }
             else {
                 [SuperUserIDType setOriginalEUID:_logos_orig$Client$seteuid UID:_logos_orig$Client$setuid GID:_logos_orig$Client$setgid];
+                [client startServer];
                 NSLog(@"Sending test notification...");
                 [notifCenter sendMessageName:SuperUserSpringBoard.requestMessage userInfo:@{
                     @"Test" : @"Successful",

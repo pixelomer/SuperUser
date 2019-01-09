@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "../macros.h"
+#import "SuperUserClient.h"
 
 @interface SuperUserSpringBoard : NSObject
 @property (readonly,nonatomic) CPDistributedMessagingCenter * _Nonnull notifCenter;
