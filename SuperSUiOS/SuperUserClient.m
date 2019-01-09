@@ -3,7 +3,7 @@
 @implementation SuperUserClient
 
 + (NSString * _Nonnull)replyMessage {
-    return @"com.pixelomer.superuser/authentication.reply";
+    return NOTIFICATION_CENTER_NAME@"/authentication.reply";
 }
 
 - (_Nullable instancetype)init {
@@ -12,12 +12,21 @@
 
 - (_Nullable instancetype)initWithNotificationCenter:(CPDistributedMessagingCenter * _Nonnull)center {
     [super init];
+    if (!center) return nil;
     _notifCenter = [center copy];
     if (!_notifCenter) return nil;
     return self;
 }
 
-- (bool)authenticateWithIDType:(IDType)type {
+- (void)startServer {
+    rocketbootstrap_distributedmessagingcenter_apply([_notifCenter retain]);
+    NSLog(@"RocketBootstrap applied.");
+    [_notifCenter runServerOnCurrentThread];
+    NSLog(@"Started client server for notification center: %@", _notifCenter);
+}
+
+- (bool)authenticateWithIDType:(IDType)type ID:(uid_t)ID {
+    NSLog(@"Client wants to authenticate with ID %i of type %i", ID, type);
     return true;
 }
 

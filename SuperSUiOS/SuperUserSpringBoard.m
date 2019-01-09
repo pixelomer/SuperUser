@@ -12,7 +12,7 @@
 }
 
 + (NSString * _Nonnull)requestMessage {
-    return @"com.pixelomer.superuser/authentication.request";
+    return NOTIFICATION_CENTER_NAME@"/authentication.request";
 }
 
 - (void)registerObservers {
@@ -22,7 +22,7 @@
     [_notifCenter runServerOnCurrentThread];
     NSLog(@"Server started running on main thread.");
     [_notifCenter registerForMessageName:SuperUserSpringBoard.requestMessage target:self selector:NOTIF_RECEIVED_SEL];
-    NSLog(@"Registering message name.");
+    NSLog(@"Registered request message.");
 }
 
 - (_Nullable instancetype)init {
@@ -31,6 +31,7 @@
 
 - (_Nullable instancetype)initWithNotificationCenter:(CPDistributedMessagingCenter * _Nonnull)center {
     [super init];
+    if (!center) return nil;
     _notifCenter = [center copy];
     if (!_notifCenter) return nil;
     return self;
