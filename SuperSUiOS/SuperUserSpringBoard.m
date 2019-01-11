@@ -1,17 +1,29 @@
 #import "SuperUserSpringBoard.h"
+// Temporary
+#define LocalizedString(val) val
 
 @implementation SuperUserSpringBoard
 
 - (void)didReceiveNotification:(NSString *)name withUserInfo:(NSDictionary *)userInfo {
     if (name && userInfo) {
         NSLog(@"Handling notification \"%@\" with user info: %@", name, userInfo);   
-        [_notifCenter sendMessageName:SuperUserClient.replyMessage userInfo:userInfo];
+        UIAlertView *alert = [[NSClassFromString(@"UIAlertView") alloc]
+            initWithTitle:@"SuperUser"
+            message:@"Can I haz root?"
+            delegate:nil
+            cancelButtonTitle:nil
+            otherButtonTitles:
+                LocalizedString(@"Yes"),
+                LocalizedString(@"Always"),
+                LocalizedString(@"No"),
+                LocalizedString(@"Never"), nil];
+        [alert show];
     }
     else { NSLog(@"Dismissing notification: %@", name); }
 }
 
 + (NSString * _Nonnull)requestMessage {
-    return NOTIFICATION_CENTER_NAME@"/authentication.request";
+    return @"authentication.request";
 }
 
 - (void)registerObservers {

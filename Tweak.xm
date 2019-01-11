@@ -10,13 +10,16 @@ bool isSpringBoard;
 
 %group Client
 %hookf(int, setuid, uid_t val) {
-    return [client authenticateWithIDType:IDTypeUserID ID:val] ? %orig : -1;
+    if (getuid() == val) return %orig;
+    else return [client authenticateWithIDType:IDTypeUserID ID:val] ? %orig : -1;
 }
 %hookf(int, seteuid, uid_t val) {
-    return [client authenticateWithIDType:IDTypeEffectiveUserID ID:val] ? %orig : -1;
+    if (geteuid() == val) return %orig;
+    else return [client authenticateWithIDType:IDTypeEffectiveUserID ID:val] ? %orig : -1;
 }
 %hookf(int, setgid, uid_t val) {
-    return [client authenticateWithIDType:IDTypeGroupID ID:val] ? %orig : -1;
+    if (getgid() == val) return %orig;
+    else return [client authenticateWithIDType:IDTypeGroupID ID:val] ? %orig : -1;
 }
 %end
 
@@ -38,12 +41,6 @@ bool isSpringBoard;
             else {
                 [SuperUserIDType setOriginalEUID:_logos_orig$Client$seteuid UID:_logos_orig$Client$setuid GID:_logos_orig$Client$setgid];
                 [client startServer];
-                NSLog(@"Sending test notification...");
-                [notifCenter sendMessageName:SuperUserSpringBoard.requestMessage userInfo:@{
-                    @"Test" : @"Successful",
-                    @"pname" : NSProcessInfo.processInfo.processName,
-                    @"bid" : ((mainBundle && mainBundle.bundleIdentifier) ? mainBundle.bundleIdentifier : @"")
-                }];
                 %init(Client);
             }
         }

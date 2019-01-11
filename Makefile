@@ -9,7 +9,7 @@ include $(THEOS)/makefiles/common.mk
 TWEAK_NAME = SuperUser
 SuperUser_LIBRARIES = rocketbootstrap
 SuperUser_PRIVATE_FRAMEWORKS = AppSupport
-SuperUser_FILES = $(wildcard SuperSUiOS/*.m) Tweak.xm
+SuperUser_FILES = $(wildcard SuperSUiOS/*.m) $(wildcard Extensions/*.m) Tweak.xm
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
