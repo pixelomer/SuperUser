@@ -36,11 +36,19 @@ int (*setgid_orig)(uid_t);
     }
 }
 
++ (NSString * _Nonnull)localizedDescriptionForIDType:(IDType)type {
+    if (type == IDTypeEffectiveUserID) return LocalizedString(@"effective user ID");
+    else if (type == IDTypeUserID) return LocalizedString(@"user ID");
+    else if (type == IDTypeGroupID) return LocalizedString(@"group ID");
+    else return LocalizedString(@"unknown ID");
+}
+
 + (uid_t)IDForIDType:(IDType)type {
     return [SuperUserIDType getterFunctionForIDType:type]();
 }
 
 + (int)setID:(uid_t)ID forType:(IDType)type {
+    NSLog(@"+[SuperUserIDType setID:%i forType:%i]", ID, type);
     return [SuperUserIDType setterFunctionForIDType:type](ID);
 }
 

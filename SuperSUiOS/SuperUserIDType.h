@@ -13,4 +13,5 @@ typedef NS_ENUM(short, IDType) {
 + (uid_t (* _Nullable)())getterFunctionForIDType:(IDType)type;
 + (uid_t)IDForIDType:(IDType)type;
 + (int)setID:(uid_t)ID forType:(IDType)type;
++ (NSString * _Nonnull)localizedDescriptionForIDType:(IDType)type;
 @end

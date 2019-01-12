@@ -6,7 +6,9 @@
 #define NSLog(...); /* */
 #endif
 #define NOTIFICATION_CENTER_NAME @"com.pixelomer.superuser"
-#define NOTIF_RECEIVED_SEL @selector(didReceiveNotification:withUserInfo:)
 #define kProcessName @"pname"
 #define kUserFriendlyName @"ufriendlyname"
 #define kBundleID @"bid"
+#define kIDType @"idtype"
+#define kID @"id"
+#define LocalizedString(val) [NSBundle.mainBundle localizedStringForKey:val value:val table:nil]
