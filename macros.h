@@ -12,5 +12,4 @@
 #define kIDType @"idtype"
 #define kID @"id"
 #define LocalizedString(val) [NSBundle.mainBundle localizedStringForKey:val value:val table:nil]
-#define kRequestID @"reqID"
-#define kObserverName @"obsName"
+#define kSuccess @"success"

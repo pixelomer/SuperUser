@@ -1,13 +1,13 @@
 THEOS_DEVICE_IP = 0
 THEOS_DEVICE_PORT = 2222
-TARGET = iphone:11.2:8.0
+TARGET = iphone:11.2:6.0
 ARCHS = arm64 armv7s armv7
 LDFLAGS = -lobjc
 
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = SuperUser
-SuperUser_LIBRARIES = rocketbootstrap DarwinNotifCenter
+SuperUser_LIBRARIES = rocketbootstrap
 SuperUser_PRIVATE_FRAMEWORKS = AppSupport
 SuperUser_FILES = $(wildcard SuperSUiOS/*.m) $(wildcard Extensions/*.m) Tweak.xm
 

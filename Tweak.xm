@@ -10,16 +10,13 @@ bool isSpringBoard;
 
 %group Client
 %hookf(int, setuid, uid_t val) {
-    if (getuid() == val) return %orig;
-    else return [client authenticateWithIDType:IDTypeUserID ID:val] ? 0 : -1;
+    return [client authenticateWithIDType:IDTypeUserID ID:val];
 }
 %hookf(int, seteuid, uid_t val) {
-    if (geteuid() == val) return %orig;
-    else return [client authenticateWithIDType:IDTypeEffectiveUserID ID:val] ? 0 : -1;
+    return [client authenticateWithIDType:IDTypeEffectiveUserID ID:val];
 }
 %hookf(int, setgid, uid_t val) {
-    if (getgid() == val) return %orig;
-    else return [client authenticateWithIDType:IDTypeGroupID ID:val] ? 0 : -1;
+    return [client authenticateWithIDType:IDTypeGroupID ID:val];
 }
 %end
 

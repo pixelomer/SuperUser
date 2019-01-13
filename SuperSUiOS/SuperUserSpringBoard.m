@@ -3,13 +3,10 @@
 @implementation SuperUserSpringBoard
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-    NSDictionary *context = alertView.context;
-    // Does not check if the button was "Don't Allow" or "Allow" for debugging purposes
-    NSLog(@"Allow was pressed, sending reply message with user info: %@", context);
-    [DarwinNotificationCenter postNotification:[context[kObserverName] stringByAppendingString:@"S"]];
+    alertView.context = @(buttonIndex);
 }
 
-- (void)didReceiveNotification:(NSString *)name withUserInfo:(NSDictionary *)userInfo {
+- (NSDictionary *)didReceiveNotification:(NSString *)name withUserInfo:(NSDictionary *)userInfo {
     if (name && userInfo) {
         uid_t newID = [(NSNumber *)userInfo[kID] intValue];
         short newIDType = [(NSNumber *)userInfo[kIDType] shortValue];
@@ -39,11 +36,20 @@
                 LocalizedString(@"Allow"),
             nil
         ];
-        alert.context = [userInfo retain];
         [alert show];
-        [alert.context release];
+        NSLog(@"Alert shown.");
+        NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
+        while(!alert.context) {
+            [runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate date]];
+        }
+        if ([(NSNumber *)alert.context boolValue]) {
+            return @{ kSuccess : @(YES) };
+        }
     }
-    else { NSLog(@"Dismissing notification: %@", name); }
+    else {
+        NSLog(@"Dismissing notification: %@", name);
+    }
+    return @{ kSuccess : @(NO) };
 }
 
 + (NSString * _Nonnull)requestMessage {

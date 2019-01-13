@@ -1,6 +1,6 @@
 Package: com.pixelomer.superuser
 Name: SuperUser
-Depends: mobilesubstrate, com.rpetrich.rocketbootstrap (>= 1.0.2), firmware (>= 11.0), com.pixelomer.libdarwinnotifcenter
+Depends: mobilesubstrate, com.rpetrich.rocketbootstrap (>= 1.0.2), firmware (>= 6.0)
 Version: 0.0.2
 Architecture: iphoneos-arm
 Description: SuperSU for iOS
