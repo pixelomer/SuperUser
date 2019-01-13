@@ -7,7 +7,7 @@ LDFLAGS = -lobjc
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = SuperUser
-SuperUser_LIBRARIES = rocketbootstrap
+SuperUser_LIBRARIES = rocketbootstrap DarwinNotifCenter
 SuperUser_PRIVATE_FRAMEWORKS = AppSupport
 SuperUser_FILES = $(wildcard SuperSUiOS/*.m) $(wildcard Extensions/*.m) Tweak.xm
 

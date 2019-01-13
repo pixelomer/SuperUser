@@ -39,9 +39,9 @@ bool isSpringBoard;
                 [server registerObservers];
             }
             else {
+                %init(Client);
                 [SuperUserIDType setOriginalEUID:_logos_orig$Client$seteuid UID:_logos_orig$Client$setuid GID:_logos_orig$Client$setgid];
                 [client startServer];
-                %init(Client);
             }
         }
     }

@@ -4,16 +4,9 @@
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     NSDictionary *context = alertView.context;
-    NSDictionary *userInfo = @{
-        kProcessName : context[kProcessName],
-        kUserFriendlyName : context[kUserFriendlyName],
-        kBundleID : (context[kBundleID] ?: @""),
-        kID : context[kID],
-        kIDType : context[kIDType]
-    };
     // Does not check if the button was "Don't Allow" or "Allow" for debugging purposes
-    NSLog(@"Allow was pressed, sending reply message with user info: %@", userInfo);
-    [_notifCenter sendMessageName:SuperUserClient.replyMessage userInfo:userInfo];
+    NSLog(@"Allow was pressed, sending reply message with user info: %@", context);
+    [DarwinNotificationCenter postNotification:[context[kObserverName] stringByAppendingString:@"S"]];
 }
 
 - (void)didReceiveNotification:(NSString *)name withUserInfo:(NSDictionary *)userInfo {

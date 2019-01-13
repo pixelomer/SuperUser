@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <DarwinNotificationCenter/DarwinNotificationCenter.h>
 #import "../macros.h"
 #import "SuperUserClient.h"
 #import "../Extensions/UIAlertView+Context.h"
