@@ -9,9 +9,9 @@ SuperSU-like tweak for jailbroken iOS devices.
 - [x] PoC is ready (0.0.1-72+debug)
 - [x] Start rewriting from scratch for end-users
 - [x] Prepare the notification center class (Ready but won't be used)
-- [ ] Prepare the client app class
-- [ ] Prepare the server class for SpringBoard
-- [ ] Setup the communication between these two classes
+- [x] Prepare the client app class
+- [x] Prepare the server class for SpringBoard
+- [x] Setup the communication between these two classes
 - [ ] Decide how to save the whitelisted and blacklisted apps
 - [ ] Prepare a preference bundle
 - [ ] Remove debugging stuff
