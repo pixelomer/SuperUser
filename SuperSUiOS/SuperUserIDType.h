@@ -1,5 +1,4 @@
 #import <Foundation/Foundation.h>
-#import "../macros.h"
 
 typedef NS_ENUM(short, IDType) {
     IDTypeGroupID,

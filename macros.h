@@ -13,3 +13,7 @@
 #define kID @"id"
 #define LocalizedString(val) [NSBundle.mainBundle localizedStringForKey:val value:val table:nil]
 #define kSuccess @"success"
+@interface NSUserDefaults(Private)
+- (id)setObject:(id)obj forKey:(NSString *)key inDomain:(NSString *)domain;
+- (id)objectForKey:(NSString *)key inDomain:(NSString *)domain;
+@end

@@ -1,7 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <SpringBoard/SpringBoard.h>
 #import <DarwinNotificationCenter/DarwinNotificationCenter.h>
-#import "../macros.h"
 #import "SuperUserClient.h"
 #import "../Extensions/UIAlertView+Context.h"
 #import <grp.h>

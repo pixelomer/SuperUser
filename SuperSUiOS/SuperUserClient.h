@@ -1,6 +1,5 @@
 #import <Foundation/Foundation.h>
 #import <DarwinNotificationCenter/DarwinNotificationCenter.h>
-#import "../macros.h"
 #import "SuperUserIDType.h"
 #import "SuperUserSpringBoard.h"
 

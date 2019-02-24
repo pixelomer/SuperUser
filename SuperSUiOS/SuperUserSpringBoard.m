@@ -71,6 +71,8 @@
         /*         interactions makes it impossible for the user to wake the device up. As a  */
         /*         result, if an app/daemon asks for permission while the device is asleep,   */
         /*         the user won't be able to answer the alert.                                */
+		/*                                                                                    */
+		/* Note:   The issue doesn't seem to occur on iOS 12.                                 */
         /**************************************************************************************/
         NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
         int i = 0;

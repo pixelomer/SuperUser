@@ -1,5 +1,4 @@
 #import <Foundation/Foundation.h>
-#import "macros.h"
 #import "SuperSUiOS/SuperSUiOS.h"
 
 SuperUserSpringBoard *server;
