@@ -7,12 +7,16 @@ LDFLAGS = -lobjc
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = SuperUser
-SuperUser_LIBRARIES = rocketbootstrap
-SuperUser_PRIVATE_FRAMEWORKS = AppSupport
-SuperUser_FILES = $(wildcard SuperSUiOS/*.m) $(wildcard Extensions/*.m) Tweak.xm
+$(TWEAK_NAME)_FRAMEWORKS = UIKit,Foundation,SpringBoard
+$(TWEAK_NAME)_LIBRARIES = rocketbootstrap DarwinNotifCenter
+$(TWEAK_NAME)_PRIVATE_FRAMEWORKS = AppSupport
+$(TWEAK_NAME)_FILES = $(wildcard SuperSUiOS/*.m) $(wildcard Extensions/*.m) Tweak.xm
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
-	@echo "Reminder: You MUST restart SpringBoard after installing this tweak. Otherwise the observer will not be registered and setuid apps will crash."
+	@echo "Reminder: You MUST restart SpringBoard after installing this tweak. Otherwise the observer will not be registered and apps that setuid() in runtime might crash."
 	install.exec "killall -9 SpringBoard || true"
+
+SUBPROJECTS += prefs
+include $(THEOS_MAKE_PATH)/aggregate.mk

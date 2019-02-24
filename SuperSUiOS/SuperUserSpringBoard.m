@@ -2,14 +2,34 @@
 
 @implementation SuperUserSpringBoard
 
+- (void)didReceiveNotification:(NSString * _Nonnull)name fromCenter:(_Nonnull CFNotificationCenterRef)center {
+    if ([name isEqualToString:@"com.apple.springboard.lockcomplete"]) {
+        NSLog(@"Screen was locked.");
+        //[self dismissAllAlerts];
+    }
+}
+
+- (void)dismissAllAlerts {
+    /*
+    for (UIAlertView *alert in alerts) {
+        [alert dismissWithClickedButtonIndex:alert.cancelButtonIndex animated:NO];
+        alert.context = [alert buttonTitleAtIndex:alert.cancelButtonIndex];
+    }
+    */
+}
+
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-    alertView.context = @(buttonIndex);
+    alertView.context = [alertView buttonTitleAtIndex:buttonIndex];
 }
 
 - (NSDictionary *)didReceiveNotification:(NSString *)name withUserInfo:(NSDictionary *)userInfo {
     if (name && userInfo) {
         uid_t newID = [(NSNumber *)userInfo[kID] intValue];
         short newIDType = [(NSNumber *)userInfo[kIDType] shortValue];
+        NSString *userDefaultsKey = [NSString stringWithFormat:@"%@/%@/%i", userInfo[kBundleID], userInfo[kProcessName], newIDType];
+        NSNumber *userDefaultsValue = [[NSUserDefaults standardUserDefaults] objectForKey:userDefaultsKey inDomain:@"com.pixelomer.superuser.history"];
+        if (userDefaultsValue)
+            return @{ kSuccess : userDefaultsValue };
         NSString *IDDescription = [NSString stringWithFormat:@"%i", newID];
         if (newIDType == IDTypeGroupID) {
             struct group *idinfo = getgrgid(newID);
@@ -33,18 +53,48 @@
             delegate:self
             cancelButtonTitle:LocalizedString(@"Don't Allow")
             otherButtonTitles:
-                LocalizedString(@"Allow"),
+                @"Allow Once",
+                @"Always Allow",
+                @"Never Allow",
             nil
         ];
         [alert show];
         NSLog(@"Alert shown.");
+        /**************************************************************************************/
+        /* Work-in-progress attempt to block main thread while not blocking user interactions */
+        /*                                                                                    */
+        /* Reason: Some applications can behave unexpectedly if they don't get permissions    */
+        /*         they asked for immediately and even showing the alert itself takes a       */
+        /*         second. As a result, the main thread is blocked to make sure the app       */
+        /*         doesn't attempt to do anything with the permissions. This, however, causes */
+        /*         a different problem. Blocking the main thread while not blocking user      */
+        /*         interactions makes it impossible for the user to wake the device up. As a  */
+        /*         result, if an app/daemon asks for permission while the device is asleep,   */
+        /*         the user won't be able to answer the alert.                                */
+        /**************************************************************************************/
         NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
-        while(!alert.context) {
-            [runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate date]];
+        int i = 0;
+        NSTimeInterval interval = 0.5;
+        NSTimeInterval timeoutInSeconds = 5.0;
+        int maxIterations = timeoutInSeconds / interval;
+        while (!alert.context && maxIterations >= i) {
+            NSDate *date = [NSDate dateWithTimeIntervalSinceNow:interval];
+            [runLoop runUntilDate:date];
+            i++;
         }
-        if ([(NSNumber *)alert.context boolValue]) {
+        if (!alert.context) {
+            [alert dismissWithClickedButtonIndex:alert.cancelButtonIndex animated:NO];
+            alert.context = [alert buttonTitleAtIndex:alert.cancelButtonIndex];
+        }
+        if ([(NSString *)alert.context isEqualToString:@"Allow Once"]) {
             return @{ kSuccess : @(YES) };
         }
+        else if ([(NSString *)alert.context isEqualToString:@"Always Allow"]) {
+            [[NSUserDefaults standardUserDefaults] setObject:@1 forKey:userDefaultsKey inDomain:@"com.pixelomer.superuser.history"];
+            return @{ kSuccess : @(YES) };
+        }
+        else if ([(NSString *)alert.context isEqualToString:@"Never Allow"]) 
+            [[NSUserDefaults standardUserDefaults] setObject:@0 forKey:userDefaultsKey inDomain:@"com.pixelomer.superuser.history"];
     }
     else {
         NSLog(@"Dismissing notification: %@", name);
@@ -64,6 +114,8 @@
     NSLog(@"Server started running on main thread.");
     [_notifCenter registerForMessageName:SuperUserSpringBoard.requestMessage target:self selector:@selector(didReceiveNotification:withUserInfo:)];
     NSLog(@"Registered request message.");
+    [darwinNotifCenter addObserverWithName:@"com.apple.springboard.lockcomplete"];
+    NSLog(@"Registered SpringBoard lockcomplete notification.");
 }
 
 - (_Nullable instancetype)init {
@@ -74,7 +126,9 @@
     [super init];
     if (!center) return nil;
     _notifCenter = [center retain];
-    if (!_notifCenter) return nil;
+    darwinNotifCenter = [DarwinNotificationCenter notificationCenterWithDelegate:self];
+    if (!_notifCenter || !darwinNotifCenter) return nil;
+    alerts = [[NSMutableArray alloc] init];
     return self;
 }
 

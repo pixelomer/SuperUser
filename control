@@ -1,6 +1,6 @@
 Package: com.pixelomer.superuser
 Name: SuperUser
-Depends: mobilesubstrate, com.rpetrich.rocketbootstrap (>= 1.0.2), firmware (>= 6.0)
+Depends: mobilesubstrate (>=0.9.7000), com.rpetrich.rocketbootstrap (>= 1.0.2), firmware (>= 6.0), preferenceloader
 Version: 0.0.2
 Architecture: iphoneos-arm
 Description: SuperSU for iOS

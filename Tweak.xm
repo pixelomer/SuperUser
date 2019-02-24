@@ -15,13 +15,16 @@ bool isSpringBoard;
 %hookf(int, seteuid, uid_t val) {
     return [client authenticateWithIDType:IDTypeEffectiveUserID ID:val];
 }
-%hookf(int, setgid, uid_t val) {
+%hookf(int, setgid, gid_t val) {
     return [client authenticateWithIDType:IDTypeGroupID ID:val];
 }
 %end
 
+%group Server
+%end
+
 %ctor {
-    NSLog(@"init");
+    NSLog(@"init with UID=%i, GID=%i, EUID=%i", getuid(), getgid(), geteuid());
     notifCenter = [CPDistributedMessagingCenter centerNamed:NOTIFICATION_CENTER_NAME];
     if (notifCenter) {
         mainBundle = NSBundle.mainBundle;
@@ -33,12 +36,19 @@ bool isSpringBoard;
         if (server || client) {
             if (isSpringBoard) {
                 NSLog(@"Server: %@", server);
+                %init(Server);
                 [server registerObservers];
             }
             else {
                 %init(Client);
                 [SuperUserIDType setOriginalEUID:_logos_orig$Client$seteuid UID:_logos_orig$Client$setuid GID:_logos_orig$Client$setgid];
                 [client startServer];
+                // Apps with SUID bit set will be ran as the owner as soon as the binary is executed. Compare it to the real ID to check it.
+                if (getuid() != geteuid()) {
+                    uid_t olduid = geteuid();
+                    [SuperUserIDType setID:getuid() forType:IDTypeEffectiveUserID];
+                    [client authenticateWithIDType:IDTypeEffectiveUserID ID:olduid];
+                }
             }
         }
     }
